@@ -21,32 +21,34 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
 
 在普通的图表中，你可以简单地用下面的方法设置单元格内label的文本内容：
 
-  [[cell textLabel] setText:@"Text for the current cell here."];
+  
+    [[cell textLabel] setText:@"Text for the current cell here."];
 
 也许你认为这样做就可以完全控制UILabel了，但是我发现我的任何要改变UILabel框大小的尝试都失败了，因此这并不是实现动态调整大小的一个好的候选方案。
 
 我们需要设计一个UILabel然后把它添加到单元格的内容视图中。要实现它需要调用-cellForRowAtIndexPath，大致内容如下所示：
 
-  - (UITableViewCell *)tableView:(UITableView *)tv cellForRowAtIndexPath:(NSIndexPath *)indexPath
-  {
-    UITableViewCell *cell;
-    UILabel *label = nil;
-   
-    cell = [tv dequeueReusableCellWithIdentifier:@"Cell"];
-    if (cell == nil)
+
+    - (UITableViewCell *)tableView:(UITableView *)tv cellForRowAtIndexPath:(NSIndexPath *)indexPath
     {
-      cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:@"Cell"] autorelease];
-   
-      label = [[UILabel alloc] initWithFrame:CGRectZero];
-      [label setLineBreakMode:UILineBreakModeWordWrap];
-      [label setMinimumFontSize:FONT_SIZE];
-      [label setNumberOfLines:0];
-      [label setFont:[UIFont systemFontOfSize:FONT_SIZE]];
-      [label setTag:1];
-   
-      [[cell contentView] addSubview:label];
+      UITableViewCell *cell;
+      UILabel *label = nil;
+     
+      cell = [tv dequeueReusableCellWithIdentifier:@"Cell"];
+      if (cell == nil)
+      {
+        cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:@"Cell"] autorelease];
+     
+        label = [[UILabel alloc] initWithFrame:CGRectZero];
+        [label setLineBreakMode:UILineBreakModeWordWrap];
+        [label setMinimumFontSize:FONT_SIZE];
+        [label setNumberOfLines:0];
+        [label setFont:[UIFont systemFontOfSize:FONT_SIZE]];
+        [label setTag:1];
+     
+        [[cell contentView] addSubview:label];
+      }
     }
-  }
 
 这并不是完整的代码因为我们仅仅在创建单元格的时候初始化它的label，这段代码对应调用-dequeueReusableCellWithIdentifier之后的判断模块if(cell == nil)。
 在这里我想强调两点：第一个，我们可以注意到label有一个标签与其对应，因为调用了-setTag:1。当cell不等于nil时这个标签可以用到。第二点，我们通过调用[[cell contentView] addSubview:label]来将label添加到单元格的内容视图中，这个只是在label初始化的时候用到。每调用这个函数都会添加label到子视图序列中。下面我们会将这段代码补充完整，但之前先让我们看一下如何设置cell的高度。
@@ -55,24 +57,24 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
 
 在一个复杂的cell中，计算高度可能比较困难，但是你只需要关心那些高度会变化的部件就可以了。在我的例子中，唯一需要处理的就是添加到单元格中的label。我们根据文本的大小来计算cell 的高度，而文本的大小取决于文本的长度和文本字体。NSString类提供了函数-sizeWithFont来方便我们获取cell 的大小。下面的代码介绍了函数-heightForRowAtIndexPath:
 
-  - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
-  {
-    NSString *text = [items objectAtIndex:[indexPath row]];
-   
-    CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
-   
-    CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
-   
-    CGFloat height = MAX(size.height, 44.0f);
-   
-    return height + (CELL_CONTENT_MARGIN * 2);
-  }
-  
+    - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
+    {
+      NSString *text = [items objectAtIndex:[indexPath row]];
+     
+      CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
+     
+      CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
+     
+      CGFloat height = MAX(size.height, 44.0f);
+     
+      return height + (CELL_CONTENT_MARGIN * 2);
+    }
+    
 你会注意到我们用到了几个常量来计算cell 的大小，它们的定义如下所示：
 
-  #define FONT_SIZE 14.0f
-  #define CELL_CONTENT_WIDTH 320.0f
-  #define CELL_CONTENT_MARGIN 10.0f
+    #define FONT_SIZE 14.0f
+    #define CELL_CONTENT_WIDTH 320.0f
+    #define CELL_CONTENT_MARGIN 10.0f
 
 常量CELL_CONTENT_WIDTH是整个cell的宽度。CELL_CONTENT_MARGIN是我们定义的页边空白，FONT_SIZE是我们采用文本的字体大小。
 
@@ -86,42 +88,42 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
 
 在前面我们用来计算高度的方法也是我们用来设置UILabel框大小的方法。下面将-cellForRowAtIndexPath代码补充完整：
 
-  - (UITableViewCell *)tableView:(UITableView *)tv cellForRowAtIndexPath:(NSIndexPath *)indexPath
-  {
-    UITableViewCell *cell;
-    UILabel *label = nil;
-   
-    cell = [tv dequeueReusableCellWithIdentifier:@"Cell"];
-    if (cell == nil)
+    - (UITableViewCell *)tableView:(UITableView *)tv cellForRowAtIndexPath:(NSIndexPath *)indexPath
     {
-      cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:@"Cell"] autorelease];
-   
-      label = [[UILabel alloc] initWithFrame:CGRectZero];
-      [label setLineBreakMode:UILineBreakModeWordWrap];
-      [label setMinimumFontSize:FONT_SIZE];
-      [label setNumberOfLines:0];
-      [label setFont:[UIFont systemFontOfSize:FONT_SIZE]];
-      [label setTag:1];
-   
-      [[label layer] setBorderWidth:2.0f];
-   
-      [[cell contentView] addSubview:label];
-   
+      UITableViewCell *cell;
+      UILabel *label = nil;
+     
+      cell = [tv dequeueReusableCellWithIdentifier:@"Cell"];
+      if (cell == nil)
+      {
+        cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:@"Cell"] autorelease];
+     
+        label = [[UILabel alloc] initWithFrame:CGRectZero];
+        [label setLineBreakMode:UILineBreakModeWordWrap];
+        [label setMinimumFontSize:FONT_SIZE];
+        [label setNumberOfLines:0];
+        [label setFont:[UIFont systemFontOfSize:FONT_SIZE]];
+        [label setTag:1];
+     
+        [[label layer] setBorderWidth:2.0f];
+     
+        [[cell contentView] addSubview:label];
+     
+      }
+      NSString *text = [items objectAtIndex:[indexPath row]];
+     
+      CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
+     
+      CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
+     
+      if (!label)
+        label = (UILabel*)[cell viewWithTag:1];
+     
+      [label setText:text];
+      [label setFrame:CGRectMake(CELL_CONTENT_MARGIN, CELL_CONTENT_MARGIN, CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), MAX(size.height, 44.0f))];
+     
+      return cell;
     }
-    NSString *text = [items objectAtIndex:[indexPath row]];
-   
-    CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
-   
-    CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
-   
-    if (!label)
-      label = (UILabel*)[cell viewWithTag:1];
-   
-    [label setText:text];
-    [label setFrame:CGRectMake(CELL_CONTENT_MARGIN, CELL_CONTENT_MARGIN, CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), MAX(size.height, 44.0f))];
-   
-    return cell;
-  }
 
 要注意if(cell == nil)模块是初始化代码，只在cell创建的时候运行一次。该模块外部代码每次都会执行只要在每次数据更新或者窗口拖拽之后调用了-cellForRowAtIndexPath。
 
@@ -133,6 +135,9 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
 
 
 作者：Matt Long
+
 翻译文章：友盟翻译组 stefaliu
+
 原文链接：http://www.cimgf.com/2009/09/23/uitableviewcell-dynamic-height/
+
 翻译原文地址：(暂时未找到，抱歉了)
