@@ -9,6 +9,8 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
 博客翻译：iOS-动态调整UITableViewCell的高度
 -------------------------------------------
 
+P.S : 以下内容代码部分，注释内容为我改进的代码段，减少issues警告。
+
 大概你第一眼看来，动态调整高度是一件不容易的事情，而且打算解决它的第一个想法往往是不正确的。在这篇文章中我将展示如何使图表单元格的高度能根据里面文本内容来动态改变，同时又不必子类化UITableViewCell。你当然可以通过子类化它来实现，但是这样做会使得代码复杂因为设置高度是在图表本身的实例上而不是对单元格操作。下面你将会看到这其实是一件轻而易举的事情。对于图表来说能够动态调整高度是件很有意义的事情，我首先想到的需要这个功能的是当显示一列长度会变化的文本列表时，如果文本内容较少，它或许能够适合正常的单元格label，但是如果文本变长，就不得不重新设置单元格大小以便于显示全部的文本内容。我总结了重新设置单元格大小的主要步骤如下：
 
 1. 创建并添加一个UILabel作为单元格cell的子视图；
@@ -40,8 +42,10 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
         cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:@"Cell"] autorelease];
      
         label = [[UILabel alloc] initWithFrame:CGRectZero];
-        [label setLineBreakMode:UILineBreakModeWordWrap];
-        [label setMinimumFontSize:FONT_SIZE];
+        //[label setLineBreakMode:UILineBreakModeWordWrap];
+        [label setLineBreakMode:NSLineBreakByWordWrapping];
+        //[label setMinimumFontSize:FONT_SIZE];
+        [label setMinimumScaleFactor:FONT_SIZE];
         [label setNumberOfLines:0];
         [label setFont:[UIFont systemFontOfSize:FONT_SIZE]];
         [label setTag:1];
@@ -63,7 +67,16 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
      
       CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
      
-      CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
+      //CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
+
+      NSAttributedString *attributedText = [[NSAttributedString alloc]initWithString:text attributes:@{
+        NSFontAttributeName:[UIFont systemFontOfSize:FONT_SIZE]
+      }];
+      CGRect rect = [attributedText boundingRectWithSize:constraint
+                                               options:NSStringDrawingUsesLineFragmentOrigin
+                                               context:nil];
+      CGSize size = rect.size;
+ 
      
       CGFloat height = MAX(size.height, 44.0f);
      
@@ -99,8 +112,10 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
         cell = [[[UITableViewCell alloc] initWithFrame:CGRectZero reuseIdentifier:@"Cell"] autorelease];
      
         label = [[UILabel alloc] initWithFrame:CGRectZero];
-        [label setLineBreakMode:UILineBreakModeWordWrap];
-        [label setMinimumFontSize:FONT_SIZE];
+        //[label setLineBreakMode:UILineBreakModeWordWrap];
+        [label setLineBreakMode:NSLineBreakByWordWrapping];
+        //[label setMinimumFontSize:FONT_SIZE];
+        [label setMinimumScaleFactor:FONT_SIZE];
         [label setNumberOfLines:0];
         [label setFont:[UIFont systemFontOfSize:FONT_SIZE]];
         [label setTag:1];
@@ -114,7 +129,16 @@ DynamicHeights是一个动态表格元素高度（动态TableViewCell）的例�
      
       CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
      
-      CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
+      //CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
+
+      NSAttributedString *attributedText = [[NSAttributedString alloc]initWithString:text attributes:@{
+        NSFontAttributeName:[UIFont systemFontOfSize:FONT_SIZE]
+      }];
+
+      CGRect rect = [attributedText boundingRectWithSize:constraint
+                                               options:NSStringDrawingUsesLineFragmentOrigin
+                                               context:nil];
+      CGSize size = rect.size;
      
       if (!label)
         label = (UILabel*)[cell viewWithTag:1];
