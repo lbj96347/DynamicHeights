@@ -55,7 +55,6 @@
     
     CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
     
-    //CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:UILineBreakModeWordWrap];
     NSAttributedString *attributedText =
     [[NSAttributedString alloc]
      initWithString:text
@@ -100,8 +99,6 @@
     
     CGSize constraint = CGSizeMake(CELL_CONTENT_WIDTH - (CELL_CONTENT_MARGIN * 2), 20000.0f);
     
-    //CGSize size = [text sizeWithFont:[UIFont systemFontOfSize:FONT_SIZE] constrainedToSize:constraint lineBreakMode:NSLineBreakByWordWrapping];
-  
     NSAttributedString *attributedText = [[NSAttributedString alloc]initWithString:text attributes:@{
       NSFontAttributeName:[UIFont systemFontOfSize:FONT_SIZE]
     }];
